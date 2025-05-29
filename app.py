@@ -14,10 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 from dotenv import load_dotenv
-
-port = int(os.environ.get("PORT", 8501))
 
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -28,7 +25,6 @@ uploaded_file = st.file_uploader(
     "Upload a .txt file with multiple prompts separated by 'Prompt X:' or blank line",
     type=["txt"]
 )
-
 
 def call_deepseek(prompt_text):
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -77,7 +73,7 @@ def call_deepseek(prompt_text):
     response.raise_for_status()
     content = response.json()["choices"][0]["message"]["content"]
 
-    # Try to extract JSON array from the response (assuming only JSON array is returned)
+    # Extract JSON array from response
     match = re.search(r"(\[.*\])", content, re.DOTALL)
     if not match:
         raise ValueError(f"❌ AI call failed: JSON array not found. Response:\n{content}")
@@ -87,7 +83,6 @@ def call_deepseek(prompt_text):
     try:
         steps = json.loads(json_str)
     except json.JSONDecodeError as e:
-        # Provide a helpful error message if JSON is invalid
         raise ValueError(f"❌ AI returned invalid JSON: {e}\nContent:\n{json_str}")
 
     return steps
@@ -103,11 +98,14 @@ def wait_for_clickable(driver, by, value, timeout=10):
 
 def execute_test_steps(steps):
     chrome_options = Options()
-    # Show browser window (remove headless for visible execution)
+    chrome_options.binary_location = "/usr/bin/chromium"
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1920,1080")
 
-    service = Service(ChromeDriverManager().install())
+    service = Service("/usr/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     results = []
@@ -243,7 +241,6 @@ if uploaded_file and st.button("Run Regression on All Prompts"):
     results_list = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        # Running with max_workers=1 because Selenium browser is heavy and parallel may cause issues
         futures = {executor.submit(process_prompt, idx, prompt): idx for idx, prompt in enumerate(prompts, 1)}
 
         for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
@@ -254,24 +251,8 @@ if uploaded_file and st.button("Run Regression on All Prompts"):
 
     st.success("All prompts processed!")
 
-    # Show summary in app
     for res in sorted(results_list, key=lambda x: x["Prompt Number"]):
         st.subheader(f"Prompt {res['Prompt Number']}")
         st.markdown(f"**Prompt:**\n```\n{res['Prompt']}\n```")
-        st.markdown(f"**Test Steps JSON:**\n```json\n{res['Test Steps']}\n```")
+        st.markdown(f"**Test Steps (JSON):**\n```json\n{res['Test Steps']}\n```")
         st.markdown(f"**Execution Results:**\n```\n{res['Execution Results']}\n```")
-
-    # Save results to Excel
-    df = pd.DataFrame(results_list)
-    excel_path = "test_results.xlsx"
-    df.to_excel(excel_path, index=False)
-
-    with open(excel_path, "rb") as f:
-        st.download_button(
-            label="Download Results as Excel",
-            data=f,
-            file_name="test_results.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-else:
-    st.info("Upload a .txt file containing prompts and click 'Run Regression on All Prompts'")
