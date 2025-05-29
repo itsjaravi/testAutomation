@@ -1,0 +1,1 @@
+Open the google.com homepage. Search for "latest technology news". Click on the first news article in the results. Verify that the article page loads successfully. Then navigate back to the Google search page and open "Images" tab for the same query.

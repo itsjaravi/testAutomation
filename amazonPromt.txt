@@ -1,0 +1,14 @@
+Prompt 1:
+Open the amazon.in homepage. Search for "wireless headphones". Click on the first product in the results. Add it to the cart. Verify the cart has 1 item.
+
+Prompt 2:
+Go to amazon.in. Hover over "Account & Lists" and click "Sign In". Enter email as "testuser@example.com" and password as "Test@1234". Click on Sign In button.
+
+Prompt 3:
+Navigate to amazon.in. Search for "laptop stand". Filter results by "Customer Review" 4 stars & up. Sort results by "Price: Low to High". Click on the third item.
+
+Prompt 4:
+Open amazon.in. Search for "smartwatch". Click on the "Today's Deals" link from the header menu. Add any one deal item to the cart and proceed to checkout page.
+
+Prompt 5:
+Go to amazon.in. Click on "Best Sellers". Choose "Electronics" category. Select the top product. Add a quantity of 2 and add it to the cart. Validate the total price reflects quantity.
