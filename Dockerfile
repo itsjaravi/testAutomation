@@ -1,44 +1,42 @@
-# Use official Python image
+# Use official Python slim image
 FROM python:3.10-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PORT=8501
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install Chromium, ChromeDriver, and dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
+    chromium \
+    chromium-driver \
     wget \
-    unzip \
-    libglib2.0-0 \
+    curl \
+    gnupg \
     libnss3 \
-    libgconf-2-4 \
-    libfontconfig1 \
     libxss1 \
     libappindicator3-1 \
-    libasound2 \
     libatk-bridge2.0-0 \
     libgtk-3-0 \
-    chromium-driver \
-    chromium \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+    libasound2 \
+    libgbm1 \
+    libgconf-2-4 \
+    fonts-liberation \
+    --no-install-recommends && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Set environment variables for chromium and chromedriver locations
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROME_DRIVER=/usr/bin/chromedriver
+
+# Copy and install Python dependencies
 COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy app source code
 COPY . .
 
-# Expose the port Streamlit runs on
-EXPOSE $PORT
+# Expose Streamlit default port (override if needed)
+EXPOSE 8501
 
-# Run the app
-CMD streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+# Run Streamlit on port 8501, listening on all interfaces
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
