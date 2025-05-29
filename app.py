@@ -17,6 +17,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from dotenv import load_dotenv
 
+port = int(os.environ.get("PORT", 8501))
+
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
